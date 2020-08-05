@@ -78,7 +78,7 @@ func listImages(ctx context.Context, client *http.Client, project string) (int, 
 	req := computeService.Images.List(project)
 	if err := req.Pages(ctx, func(page *compute.ImageList) error {
 		for _, image := range page.Items {
-			layout := "2006-01-02T15:04:05.000Z"
+			layout := "2006-01-02T15:04:05.000Z07:00"
 			t, _ := time.Parse(layout, image.CreationTimestamp)
 			promImageFiles.WithLabelValues(project, image.Name, image.Family, image.Status).Set(float64(t.Unix()))
 			promImageBytes.WithLabelValues(project, image.Name, image.Family, image.Status).Set(float64(image.ArchiveSizeBytes))
