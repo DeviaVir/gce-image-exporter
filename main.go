@@ -19,12 +19,12 @@ import (
 )
 
 var (
-	sources      flagx.StringArray
+	projects     flagx.StringArray
 	collectTimes flagx.DurationArray
 )
 
 func init() {
-	flag.Var(&sources, "project", "<project-id>")
+	flag.Var(&projects, "project", "<project-id>")
 	flag.Var(&collectTimes, "time", "Run collections at given interval <600s>.")
 	log.SetFlags(log.LUTC | log.Lshortfile | log.Ltime | log.Ldate)
 }
@@ -55,8 +55,8 @@ func main() {
 	flag.Parse()
 	rtx.Must(flagx.ArgsFromEnv(flag.CommandLine), "Failed to parse args")
 
-	if len(sources) != len(collectTimes) {
-		logFatal("Must provide same number of sources as collection times.")
+	if len(projects) != len(collectTimes) {
+		logFatal("Must provide same number of projects as collection times.")
 	}
 
 	srv := prometheusx.MustServeMetrics()
@@ -68,7 +68,7 @@ func main() {
 	wg := sync.WaitGroup{}
 	for i, t := range collectTimes {
 		wg.Add(1)
-		go updateForever(mainCtx, &wg, client, sources[i], t)
+		go updateForever(mainCtx, &wg, client, projects[i], t)
 	}
 	wg.Wait()
 }
