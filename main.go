@@ -31,25 +31,30 @@ func init() {
 
 var (
 	mainCtx, mainCancel = context.WithCancel(context.Background())
+	logFatal            = log.Fatal
 )
 
 // updateForever runs the gceimage.Update on the given bucket at the given collect time every day.
 func updateForever(ctx context.Context, wg *sync.WaitGroup, client *http.Client, bucket string, collect time.Duration) {
 	defer wg.Done()
 
-	gceimage.Update(mainCtx, client, bucket)
+	err := gceimage.Update(mainCtx, client, bucket)
+	if err != nil {
+		logFatal(err)
+	}
 
 	for {
 		select {
 		case <-mainCtx.Done():
 			return
 		case <-time.After(collect):
-			gceimage.Update(mainCtx, client, bucket)
+			err = gceimage.Update(mainCtx, client, bucket)
+			if err != nil {
+				logFatal(err)
+			}
 		}
 	}
 }
-
-var logFatal = log.Fatal
 
 func main() {
 	flag.Parse()
